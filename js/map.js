@@ -63,7 +63,7 @@ L.control.scale().addTo(map);
 // GEOJSON LAYER
 // ===============================
 
-fetch('data/KKPRL.geojson')
+fetch('data/sample.geojson')
   .then(response => response.json())
   .then(data => {
     const geojsonLayer = L.geoJSON(data, {
