@@ -21,3 +21,10 @@
     }
   ]
 }
+
+const baseMaps = {
+  "OpenStreetMap": osm,
+  "Satellite (Esri)": esriSat
+};
+
+L.control.layers(baseMaps).addTo(map);
