@@ -41,9 +41,10 @@ fetch('data/sample.geojson')
       }
     }).addTo(map);
 
-    // Layer control
-    L.control.layers(
-      { "OpenStreetMap": osm },
-      { "GeoJSON Layer": geojsonLayer }
-    ).addTo(map);
-  });
+
+const baseMaps = {
+  "OpenStreetMap": osm,
+  "Satellite (Esri)": esriSat
+};
+
+L.control.layers(baseMaps).addTo(map);
