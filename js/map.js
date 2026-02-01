@@ -1,8 +1,13 @@
-// Base maps
+// ===============================
+// BASE MAPS
+// ===============================
+
+// OpenStreetMap
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 });
 
+// Esri Satellite
 const esriSat = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   {
@@ -10,42 +15,81 @@ const esriSat = L.tileLayer(
   }
 );
 
-// Initialize map (ONLY ONCE)
+// Esri Reference Layers (Labels & Boundaries)
+const esriLabels = L.tileLayer(
+  'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Esri'
+  }
+);
+
+const esriBoundaries = L.tileLayer(
+  'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Esri'
+  }
+);
+
+// ===============================
+// MAP INITIALIZATION
+// ===============================
+
 const map = L.map('map', {
-  center: [-7.8, 110.4],
+  center: [-7.8, 110.4], // Indonesia
   zoom: 7,
-  layers: [osm]
+  layers: [esriSat, esriLabels, esriBoundaries] // Satellite default
 });
 
-// Marker example
+// ===============================
+// MARKER
+// ===============================
+
 L.marker([-7.797068, 110.370529])
   .addTo(map)
   .bindPopup('<b>Yogyakarta</b><br>Sample Marker');
 
-// Layer control
+// ===============================
+// LAYER CONTROL
+// ===============================
+
 const baseMaps = {
   "OpenStreetMap": osm,
-  "Satellite (Esri)": esriSat
+  "Satellite": esriSat
 };
 
-L.control.layers(baseMaps).addTo(map);
+const overlayMaps = {
+  "Labels": esriLabels,
+  "Boundaries": esriBoundaries
+};
 
-// GeoJSON layer
+L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+// Scale bar (nice touch)
+L.control.scale().addTo(map);
+
+// ===============================
+// GEOJSON LAYER
+// ===============================
+
 fetch('data/sample.geojson')
-  .then(res => res.json())
+  .then(response => response.json())
   .then(data => {
     const geojsonLayer = L.geoJSON(data, {
       style: {
-        color: 'blue',
+        color: '#2563eb',
         weight: 2,
         fillOpacity: 0.3
       },
       onEachFeature: (feature, layer) => {
-        layer.bindPopup(feature.properties.name);
+        if (feature.properties && feature.properties.name) {
+          layer.bindPopup(feature.properties.name);
+        }
       }
     }).addTo(map);
 
-    // Auto zoom to polygon
+    // Auto zoom to GeoJSON
     map.fitBounds(geojsonLayer.getBounds());
   })
-  .catch(err => console.error('GeoJSON load error:', err));
+  .catch(error => {
+    console.error('Error loading GeoJSON:', error);
+  });
