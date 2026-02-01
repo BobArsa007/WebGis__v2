@@ -15,7 +15,7 @@ const esriSat = L.tileLayer(
   }
 );
 
-// ✅ Esri Hybrid Overlay (Labels + Borders)
+// Esri Hybrid Overlay (Labels + Borders)
 const esriHybrid = L.tileLayer(
   'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
   {
@@ -30,7 +30,7 @@ const esriHybrid = L.tileLayer(
 const map = L.map('map', {
   center: [-7.8, 110.4], // Indonesia
   zoom: 7,
-  layers: [esriSat, esriHybrid] // Satellite + labels ON by default
+  layers: [esriSat, esriHybrid]
 });
 
 // ===============================
@@ -60,7 +60,7 @@ L.control.layers(baseMaps, overlayMaps).addTo(map);
 L.control.scale().addTo(map);
 
 // ===============================
-// GEOJSON LAYER
+// GEOJSON LAYER (FULL FIX)
 // ===============================
 
 fetch('data/sample.geojson')
@@ -70,16 +70,45 @@ fetch('data/sample.geojson')
       style: {
         color: '#2563eb',
         weight: 2,
+        fillColor: '#2563eb',
         fillOpacity: 0.3
       },
       onEachFeature: (feature, layer) => {
-        if (feature.properties && feature.properties.name) {
-          layer.bindPopup(feature.properties.name);
+        if (feature.properties) {
+          const p = feature.properties;
+
+          const popupContent = `
+            <div style="font-size:13px; line-height:1.4;">
+              <b>No KKPRL:</b> ${p.NO_KKPRL || '-'}<br>
+              <b>Nama Subjek:</b> ${p.NAMA_SUBJ || '-'}<br>
+              <b>Kegiatan:</b> ${p.KEGIATAN || '-'}<br>
+              <b>Provinsi:</b> ${p.PROVINSI || '-'}<br>
+              <b>Perairan:</b> ${p.PERAIRAN || '-'}<br>
+              <b>Luas (Ha):</b> ${p.LUAS_HA || '-'}<br>
+              <b>Terbit:</b> ${p.TERBIT || '-'}<br>
+              <b>Berlaku:</b> ${p.BERLAKU || '-'}<br>
+              <b>Penerbit:</b> ${p.PENERBIT || '-'}
+            </div>
+          `;
+
+          layer.bindPopup(popupContent);
+
+          // Hover highlight
+          layer.on('mouseover', () => {
+            layer.setStyle({
+              weight: 3,
+              fillOpacity: 0.6
+            });
+          });
+
+          layer.on('mouseout', () => {
+            geojsonLayer.resetStyle(layer);
+          });
         }
       }
     }).addTo(map);
 
-    // Auto zoom to GeoJSON
+    // Auto zoom to polygon
     map.fitBounds(geojsonLayer.getBounds());
   })
   .catch(error => {
