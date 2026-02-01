@@ -1,10 +1,25 @@
 // Initialize map
 const map = L.map('map').setView([-7.8, 110.4], 7); // Indonesia example
 
-// Base map
+// Base maps
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+});
+
+const esriSat = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles © Esri'
+  }
+);
+
+// Initialize map with default basemap
+const map = L.map('map', {
+  center: [-7.8, 110.4],
+  zoom: 7,
+  layers: [osm]
+});
+
 
 // Marker example
 const marker = L.marker([-7.797068, 110.370529])
